@@ -14,7 +14,9 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import net.praqma.web.model.Meeting;
 import net.praqma.web.model.Method;
+import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
@@ -58,10 +60,28 @@ public class MethodResource {
         return Arrays.asList(methods);
     }
     
+    @POST
+    @Path("/{id}/delete")
+    public void delete(@PathParam("id") Long id) {
+        Transaction tx = null; 
+        try {
+            Session session = HibernateUtil.getSessionFactory().getCurrentSession();
+            tx = session.beginTransaction();
+        
+            Method m = (Method)session.createQuery("from Method m where m.id = :myid ").setParameter("myid", id).uniqueResult();
+            session.delete(m);
+            
+            tx.commit();
+            
+        } catch (Exception ex) {
+            tx.rollback();
+        }
+    }
+    
     @GET
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Method show(@PathParam("id") Long id) {     
+    public Method showJSON(@PathParam("id") Long id) {     
         Session session = HibernateUtil.getSessionFactory().getCurrentSession();
         Transaction tx = session.beginTransaction();
         
@@ -70,24 +90,73 @@ public class MethodResource {
         return m;
     }
     
-    @POST
-    @Path("/find")
-    //@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    @Produces(MediaType.APPLICATION_JSON)
-    public List<Method> find(@FormParam("num") int num) {
-        
+    @GET
+    @Path("/{id}")
+    @Produces(MediaType.TEXT_HTML)
+    public String showHtml(@PathParam("id") Long id) {     
         Session session = HibernateUtil.getSessionFactory().getCurrentSession();
         Transaction tx = session.beginTransaction();
         
-        List<Method> objects = (List<Method>)session.createQuery("from Method").list();
-        List<Method> selctedMethods = new ArrayList<Method>();
+        Method m = (Method)session.createQuery("from Method m where m.id = :myid ").setParameter("myid", id).uniqueResult();
+        
+        
+        StringBuilder builder = new StringBuilder();
+        
+        builder.append("<html>");
+        builder.append("<head></head>");
+        builder.append("<body>");
+        builder.append(String.format("<h3>%s</h3>", m.getTitle()));
+        builder.append(String.format(m.getMetodologyText()));
+        builder.append("</body>");
+        builder.append("</html>");
         
         tx.commit();
-        for(Method m : objects) {
-            if(num >= m.getMinParticipant() && num <= m.getMaxParticipant() ) {
-                selctedMethods.add(m);
+        return builder.toString();
+    }
+    
+    
+    @POST
+    @Path("/find")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<Method> find(@FormParam("num") int num, @FormParam("type") String type) {
+        Meeting m1 = null;
+        Transaction tx = null;
+        List<Method> selctedMethods = new ArrayList<Method>();  
+        try {
+            Session session = HibernateUtil.getSessionFactory().getCurrentSession();
+            tx = session.beginTransaction();
+
+            System.out.println("SELECTED TYPE : "+type);
+            Query q = session.createQuery("from Meeting me where me.type = :mytype");
+            q.setParameter("mytype", type);
+            
+            
+            System.out.println(q.getQueryString());
+            
+            m1 = (Meeting)q.uniqueResult();
+            System.out.println("About to commit!");
+            
+            System.out.println("Cone comitting!");
+            
+            if(m1 == null) {
+                System.out.println("Whoops! Something went wrong");
+            } else if(m1 != null) {
+                System.out.println("Found somee methods: "+m1.getApplicableMethods().size());
+                for(Method m : m1.getApplicableMethods()) {
+                    if(num >= m.getMinParticipant() && num <= m.getMaxParticipant() ) {
+                        selctedMethods.add(m);
+                    }
+                }
             }
+            tx.commit();
+
+        } catch (Exception ex) {
+            ex.printStackTrace(System.out);
+            tx.rollback();
         }
+                
+              
+        
         return selctedMethods;
 
     }

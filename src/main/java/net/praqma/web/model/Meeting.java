@@ -5,10 +5,14 @@
 package net.praqma.web.model;
 
 import java.io.Serializable;
+import java.util.Set;
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -19,8 +23,14 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 @Entity
 public class Meeting implements Serializable {
+    @Id
+    @GeneratedValue(strategy=GenerationType.AUTO)
     private Long id;
+    
     private String type;
+    
+    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private Set<Method> applicableMethods;
     
     public Meeting() { }
     
@@ -31,8 +41,6 @@ public class Meeting implements Serializable {
     /**
      * @return the id
      */
-    @Id
-    @GeneratedValue(strategy=GenerationType.AUTO)
     public Long getId() {
         return id;
     }
@@ -58,4 +66,12 @@ public class Meeting implements Serializable {
         this.type = type;
     }
     
+    public Set<Method> getApplicableMethods() {
+        return applicableMethods;
+    }
+    
+    public void setApplicableMethods(Set<Method> applicableMethods) {
+        this.applicableMethods = applicableMethods;
+    }
+   
 }

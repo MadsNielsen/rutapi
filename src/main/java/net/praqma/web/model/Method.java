@@ -5,10 +5,12 @@
 package net.praqma.web.model;
 
 import java.io.Serializable;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -19,24 +21,36 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 @Entity
 public class Method implements Serializable {
+    @Id
+    @GeneratedValue(strategy=GenerationType.AUTO)
     private Long id;
-    private int minParticipant = 1;
-    private int maxParticipant = Integer.MAX_VALUE;
+    @Column(length=3000)
     private String metodologyText;
     
+    private String title;
+    private int minParticipant = 1;
+    private int maxParticipant = Integer.MAX_VALUE;
+  
     public Method() { }
+  
+    public Method(String metodologyText, String title, int minParticipant, int maxParticipant) {
+        this.metodologyText = metodologyText;
+        this.minParticipant = minParticipant;
+        this.metodologyText = metodologyText;
+        this.title = title;
+    }
     
+    @Deprecated
     public Method(String metodologyText, int minParticipant, int maxParticipant) {
         this.maxParticipant = maxParticipant;
         this.minParticipant = minParticipant;
-        this.metodologyText = metodologyText;                
+        this.metodologyText = metodologyText;
+        this.title = "Manglende titel";
     }
 
     /**
      * @return the id
      */
-    @Id
-    @GeneratedValue(strategy=GenerationType.AUTO)
     public Long getId() {
         return id;
     }
@@ -88,5 +102,19 @@ public class Method implements Serializable {
      */
     public void setMaxParticipant(int maxParticipant) {
         this.maxParticipant = maxParticipant;
+    }
+
+    /**
+     * @return the title
+     */
+    public String getTitle() {
+        return title;
+    }
+
+    /**
+     * @param title the title to set
+     */
+    public void setTitle(String title) {
+        this.title = title;
     }
 }

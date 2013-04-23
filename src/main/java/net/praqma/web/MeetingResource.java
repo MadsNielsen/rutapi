@@ -5,12 +5,17 @@
 package net.praqma.web;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import net.praqma.web.model.Meeting;
+import net.praqma.web.model.Method;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
@@ -23,28 +28,64 @@ import org.hibernate.Transaction;
 public class MeetingResource {
  
     Meeting[] meetings = new Meeting[] {
-        new Meeting("Retropspective"),
+        new Meeting("Retrospective"),
         new Meeting("Fagmøde")
     };
     
     @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public List<Meeting> list() {
-        return null;        
+    @Produces(MediaType.TEXT_HTML)
+    public String index() {
+        return "<h3>Meetings</h3>";
     }
     
     @GET
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Meeting show() {
-        return null;        
+    public Meeting showJSON(@PathParam("id") Long id) {
+        Session s = HibernateUtil.getCurrentSession();               
+        Transaction tx = HibernateUtil.getCurrentSession().beginTransaction();
+        Meeting m = (Meeting) HibernateUtil.getCurrentSession().createQuery("from Meeting m where m.id = :id").setParameter("id", id).uniqueResult();
+        tx.commit();        
+        return m;
+    }
+    
+    @GET
+    @Path("/{id}")
+    @Produces(MediaType.TEXT_HTML)
+    public Meeting showHtml(@PathParam("id") Long id) {
+        Session s = HibernateUtil.getCurrentSession();               
+        Transaction tx = HibernateUtil.getCurrentSession().beginTransaction();
+        Meeting m = (Meeting) HibernateUtil.getCurrentSession().createQuery("from Meeting m where m.id = :id").setParameter("id", id).uniqueResult();
+        tx.commit();        
+        return m;
+    }
+
+    @POST
+    @Path("/{id}/delete")
+    public void deletePost(@PathParam("id") Long id) {
+        Session s = HibernateUtil.getCurrentSession();               
+        Transaction tx = HibernateUtil.getCurrentSession().beginTransaction();
+        Meeting m = (Meeting) HibernateUtil.getCurrentSession().createQuery("from Meeting m where m.id = :id").setParameter("id", id).uniqueResult();
+        s.delete(m);
+        tx.commit();
+    }
+    
+    @GET
+    @Path("/{id}/delete")
+    public boolean deleteGet(@PathParam("id") Long id) {
+        Session s = HibernateUtil.getCurrentSession();               
+        Transaction tx = HibernateUtil.getCurrentSession().beginTransaction();
+        Meeting m = (Meeting) HibernateUtil.getCurrentSession().createQuery("from Meeting m where m.id = :id").setParameter("id", id).uniqueResult();
+        s.delete(m);
+        tx.commit();
+        return true;
     }
     
     /**
      * 
      * @return a request for the 
      */
-    @GET
+    @POST
     @Path("/types")
     @Produces(MediaType.APPLICATION_JSON)
     public List<String> types() {
@@ -59,9 +100,21 @@ public class MeetingResource {
     @Produces(MediaType.APPLICATION_JSON)
     public List<Meeting> bootstrap() {
         
+        String text ="<p>We are uncovering better ways of developing software by doing it and helping others do it."+ 
+"Through this work we have come to value:</p><ul>" +
+"<li><b>Individuals and interactions</b> over processes and tools</li>" +
+"<li><b>Working software</b> over comprehensive documentation</li>" +
+"<li><b>Customer collaboration</b> over contract negotiation</li>" +
+"<li><b>Responding to change</b> over following a plan</li>" +
+"</ul>"; 
+        
         Session session = HibernateUtil.getSessionFactory().getCurrentSession();
         Transaction tx = session.beginTransaction();
         for(Meeting m : meetings) {
+            Method me2 = new Method(text, String.format("Method for %s",m.getType()), new Random().nextInt(3)+1, new Random().nextInt(5)+10);
+            Method me3 = new Method(text, String.format("Method for %s",m.getType()), new Random().nextInt(3)+1, new Random().nextInt(5)+10);
+            
+            m.setApplicableMethods(new HashSet<Method>(Arrays.asList(me2,me3)));
             session.save(m);
         }
         tx.commit();
