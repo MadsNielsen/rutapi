@@ -13,8 +13,21 @@
 
     <body>
         <div id="wrapper">
-            <div id="form-wrapper" style="width:100%">  
+            <div id="form-wrapper">  
                 <form class="form-horizontal" id="myform">
+                    
+                    <div class="control-group">
+                        <label class="control-label" for="inputWorkshopType">Mødetype</label>
+                        <div class="controls">
+                            <!-- <input type="text" class="input-medium" id="inputWorkshopType" placeholder="Mødetype" data-provide="typeahead" autocomplete="off">-->
+                            <select id="inputWorkshopType" class="input-medium">
+                                <option>Retrospective</option>
+                                <option>Fagmøde</option>
+                                <!-- <option>Projektafslutning</option> -->
+                            </select>
+                        </div>
+                    </div>
+                    
                     <div class="control-group">
                         <label class="control-label" for="inputWorkshopType">Mødeform</label>
                         <div class="controls">
@@ -26,18 +39,14 @@
                             </select>                  
                         </div>
                     </div>                
-                    <div class="control-group">
-                        <label class="control-label" for="inputWorkshopType">Mødetype</label>
-                        <div class="controls">
-                            <input type="text" class="input-medium" id="inputWorkshopType" placeholder="Mødetype" data-provide="typeahead" autocomplete="off">
-                        </div>
-                    </div>
+
                     <div class="control-group">
                         <label class="control-label" for="inputNumParticpants">Antal deltagere</label>
                         <div class="controls">
                             <input type="text" id="inputNumParticpants" class="input-medium" placeholder="Antal deltagere">
                         </div>
                     </div>
+                    
                 </form>
             </div>
 
@@ -73,7 +82,7 @@
             $(document).ready(function () {
                 $(['#inputNumParticpants','#inputWorkshopType','#inputWorkshopFormat']).each(function(index, value){
 
-                    $(value).on('keyup',function() {
+                    $(value).on('keyup change',function() {
                         var number = $('#inputNumParticpants').val();
                         var meetingType = $('#inputWorkshopType').val();
                         var dataArguments = {num: number, type: meetingType};

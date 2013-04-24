@@ -16,6 +16,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import net.praqma.web.model.Meeting;
 import net.praqma.web.model.Method;
+import net.praqma.web.model.Question;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
@@ -100,20 +101,27 @@ public class MeetingResource {
     @Produces(MediaType.APPLICATION_JSON)
     public List<Meeting> bootstrap() {
         
+        Question[] qs = {
+            new Question("Why is the answer to the universe, life and everything 42?", 222),
+            new Question("Why is the grass always greener on the other side?",2)
+        
+        };
+        
         String text ="<img src=\"images/fishbowl.png\"/><p>We are uncovering better ways of developing software by doing it and helping others do it."+ 
-"Through this work we have come to value:</p><ul>" +
-"<li><b>Individuals and interactions</b> over processes and tools</li>" +
-"<li><b>Working software</b> over comprehensive documentation</li>" +
-"<li><b>Customer collaboration</b> over contract negotiation</li>" +
-"<li><b>Responding to change</b> over following a plan</li>" +
-"</ul>"; 
+                        "Through this work we have come to value:</p><ul>" +
+                        "<li><b>Individuals and interactions</b> over processes and tools</li>" +
+                        "<li><b>Working software</b> over comprehensive documentation</li>" +
+                        "<li><b>Customer collaboration</b> over contract negotiation</li>" +
+                        "<li><b>Responding to change</b> over following a plan</li>" +
+                        "</ul>"; 
         
         Session session = HibernateUtil.getSessionFactory().getCurrentSession();
         Transaction tx = session.beginTransaction();
         for(Meeting m : meetings) {
             Method me2 = new Method(text, String.format("Method for %s",m.getType()), new Random().nextInt(3)+1, new Random().nextInt(5)+10);
+            me2.setRelevantQuestions(Arrays.asList(qs));
             Method me3 = new Method(text, String.format("Method for %s",m.getType()), new Random().nextInt(3)+1, new Random().nextInt(5)+10);
-            
+            me3.setRelevantQuestions(Arrays.asList(qs));
             m.setApplicableMethods(new HashSet<Method>(Arrays.asList(me2,me3)));
             session.save(m);
         }
