@@ -23,9 +23,10 @@ import org.hibernate.Transaction;
 public class QuestionResource {
     
     private Question[] questions = new Question[] { 
-        new Question(1L,"Why are my pants purple?"),
-        new Question(2L,"Why come the answer to the universe, and everything, is 42?"),
-        new Question(3L,"Why does it rain on the moon?")
+        new Question("Why are my pants purple?",2),
+        new Question("Why come the answer to the universe, and everything, is 42?",3),
+        new Question("Why does it rain on the moon?",1),
+        new Question("Why are roses usually red?",4)
     };
     
     @GET
@@ -33,10 +34,8 @@ public class QuestionResource {
     public List<Question> listQuestion() {
         
         Session session = HibernateUtil.getCurrentSession();
-        Transaction tx = session.beginTransaction();
-        
-        List objects = session.createQuery("from Question").list();
-        
+        Transaction tx = session.beginTransaction();        
+        List objects = session.createQuery("from Question").list();        
         tx.commit();
         return (List<Question>)objects;
     }
@@ -59,16 +58,9 @@ public class QuestionResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Question showQuestion(@PathParam("id") Long id) {
         Session session = HibernateUtil.getCurrentSession();
-        Transaction tx = session.beginTransaction();
-        
-        List<Question> qs = (List<Question>)session.createQuery("from Question").list();
-        
+        Transaction tx = session.beginTransaction();        
+        Question qs = (Question)session.createQuery("from Question q where q.id = :id").setParameter("id", id).uniqueResult();        
         tx.commit();
-        for(Question q : qs) {
-            if(q.getId() == id) {
-                return q;
-            }
-        }        
-        return null;
+        return qs;
     }
 }

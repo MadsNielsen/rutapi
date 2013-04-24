@@ -100,7 +100,7 @@ public class MeetingResource {
     @Produces(MediaType.APPLICATION_JSON)
     public List<Meeting> bootstrap() {
         
-        String text ="<p>We are uncovering better ways of developing software by doing it and helping others do it."+ 
+        String text ="<img src=\"images/fishbowl.png\"/><p>We are uncovering better ways of developing software by doing it and helping others do it."+ 
 "Through this work we have come to value:</p><ul>" +
 "<li><b>Individuals and interactions</b> over processes and tools</li>" +
 "<li><b>Working software</b> over comprehensive documentation</li>" +

@@ -16,6 +16,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import net.praqma.web.model.Meeting;
 import net.praqma.web.model.Method;
+import net.praqma.web.model.Question;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -95,21 +96,22 @@ public class MethodResource {
     @Produces(MediaType.TEXT_HTML)
     public String showHtml(@PathParam("id") Long id) {     
         Session session = HibernateUtil.getSessionFactory().getCurrentSession();
-        Transaction tx = session.beginTransaction();
-        
-        Method m = (Method)session.createQuery("from Method m where m.id = :myid ").setParameter("myid", id).uniqueResult();
-        
-        
+        Transaction tx = session.beginTransaction();        
+        Method m = (Method)session.createQuery("from Method m where m.id = :myid ").setParameter("myid", id).uniqueResult();                
         StringBuilder builder = new StringBuilder();
-        
-        builder.append("<html>");
-        builder.append("<head></head>");
-        builder.append("<body>");
+        builder.append(String.format("<div id=\"method-wrapper\">",m.getId()));
         builder.append(String.format("<h3>%s</h3>", m.getTitle()));
-        builder.append(String.format(m.getMetodologyText()));
-        builder.append("</body>");
-        builder.append("</html>");
-        
+        builder.append(String.format("<p>Method id: %s</p>", m.getId()));
+        builder.append(String.format(m.getMetodologyText()));        
+        List<Question> qs = m.getRelevantQuestions();        
+        if(!m.getRelevantQuestions().isEmpty()) {
+            builder.append("<div id=\"method-question-wrapper\">");            
+            for(Question q : qs) {
+                builder.append(String.format("<p>Question id: %s, Question text: %s, Question importance: %s",q.getId(), q.getQuestionText(), q.getImportance()));
+            }             
+            builder.append("</div>");            
+        }
+        builder.append("</div>");         
         tx.commit();
         return builder.toString();
     }

@@ -5,12 +5,16 @@
 package net.praqma.web.model;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Lob;
+import javax.persistence.ManyToMany;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -30,14 +34,17 @@ public class Method implements Serializable {
     private String title;
     private int minParticipant = 1;
     private int maxParticipant = Integer.MAX_VALUE;
-  
-    public Method() { }
-  
+    
+    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private List<Question> relevantQuestions;
+    
+    public Method() {}
     public Method(String metodologyText, String title, int minParticipant, int maxParticipant) {
         this.metodologyText = metodologyText;
         this.minParticipant = minParticipant;
         this.metodologyText = metodologyText;
         this.title = title;
+        
     }
     
     @Deprecated
@@ -116,5 +123,19 @@ public class Method implements Serializable {
      */
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    /**
+     * @return the relevantQuestions
+     */
+    public List<Question> getRelevantQuestions() {
+        return relevantQuestions;
+    }
+
+    /**
+     * @param relevantQuestions the relevantQuestions to set
+     */
+    public void setRelevantQuestions(List<Question> relevantQuestions) {
+        this.relevantQuestions = relevantQuestions;
     }
 }
