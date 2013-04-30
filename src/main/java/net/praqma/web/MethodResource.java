@@ -7,6 +7,7 @@ package net.praqma.web;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import javax.persistence.Transient;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -123,9 +124,10 @@ public class MethodResource {
     public List<Method> find(@FormParam("num") int num, @FormParam("type") String type) {
         Meeting m1 = null;
         Transaction tx = null;
-        List<Method> selctedMethods = new ArrayList<Method>();  
+        List<Method> selctedMethods = new ArrayList<Method>();
+        Session session = null;
         try {
-            Session session = HibernateUtil.getSessionFactory().getCurrentSession();
+            session = HibernateUtil.getSessionFactory().getCurrentSession();
             tx = session.beginTransaction();
 
             System.out.println("SELECTED TYPE : "+type);
@@ -150,15 +152,13 @@ public class MethodResource {
                     }
                 }
             }
-            tx.commit();
+            
 
         } catch (Exception ex) {
             ex.printStackTrace(System.out);
             tx.rollback();
         }
-                
-              
-        
+        tx.commit();
         return selctedMethods;
 
     }

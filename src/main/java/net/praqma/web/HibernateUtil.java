@@ -4,7 +4,6 @@
  */
 package net.praqma.web;
 
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
 import org.hibernate.HibernateException;
@@ -28,7 +27,6 @@ public class HibernateUtil {
     static {
         try {
             Configuration configuration = new Configuration().configure(HibernateUtil.class.getResource("hibernate.cfg.xml"));
-
             serviceRegistry = new ServiceRegistryBuilder().applySettings(configuration.getProperties()).buildServiceRegistry();
             sessionFactory = configuration.buildSessionFactory(serviceRegistry);
         } catch (HibernateException he) {
@@ -46,45 +44,63 @@ public class HibernateUtil {
     }
     
     public static <T extends Object> T getSingle(String query, HashMap<String, Object> parameters )  {
-        T object;
-        Transaction tx = HibernateUtil.getCurrentSession().beginTransaction();
-        Query q = HibernateUtil.getCurrentSession().createQuery(query);
-        for(String s : parameters.keySet()) {
-            q = q.setParameter(s, parameters.get(s));
-        }
-
-        object = (T)q.uniqueResult();        
-        tx.commit();
+        T object = null;
+        Transaction tx = null;
+        Session session = null;
+        try {
+            session = HibernateUtil.getCurrentSession();
+            tx = session.beginTransaction();
+            Query q = session.createQuery(query);
+            if(parameters != null) {
+                for(String s : parameters.keySet()) {
+                    q = q.setParameter(s, parameters.get(s));
+                }
+            }
+            object = (T)q.uniqueResult();        
+            tx.commit();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            if(tx != null) {
+                tx.rollback();
+            }
+        } 
         
         return object;
     }
     
     public static <T extends Object> T saveSingle(T t) {
-        T object = null;
+        T object = null;        
         Transaction tx = HibernateUtil.getCurrentSession().beginTransaction();
         try {
-
             object = (T)HibernateUtil.getCurrentSession().save(t);
             tx.commit();
         } catch (Exception ex) {
             ex.printStackTrace();
-            tx.rollback();
+            if(tx != null) {
+                tx.rollback();
+            }
         }
         
         return object;        
     }
     
     public static <T extends Collection<?>> T getList(String query, HashMap<String, Object> parameters )  {
-        T object;
-        Transaction tx = HibernateUtil.getCurrentSession().beginTransaction();
-        Query q = HibernateUtil.getCurrentSession().createQuery(query);
-        for(String s : parameters.keySet()) {
-            q = q.setParameter(s, parameters.get(s));
-        }
-
-        object = (T)q.list();
-        tx.commit();
+        T object = null;
+        Transaction tx = null;
+        Session session = null;
+        try {
+            tx = HibernateUtil.getCurrentSession().beginTransaction();
+            Query q = HibernateUtil.getCurrentSession().createQuery(query);
+            for(String s : parameters.keySet()) {
+                q = q.setParameter(s, parameters.get(s));
+            }
+            object = (T)q.list();
+            tx.commit();
         
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            tx.rollback();
+        }
         return object;
     }
    

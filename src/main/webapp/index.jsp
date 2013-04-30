@@ -45,15 +45,24 @@
                         <div class="controls">
                             <input type="text" id="inputNumParticpants" class="input-medium" placeholder="Antal deltagere">
                         </div>
-                    </div>
-                    
+                    </div>              
                 </form>
             </div>
+            
+            <button id="do-feedback" class="btn btn-small btn-primary">Give feedback</button> 
+            <input type="text" id="feedback-value" class="input-medium" placeholder="Grade me!">
+                
 
             <!--Container for method search results-->
             <div id="method-search-result"></div>
             <!--Container for showing the currently selected method -->
             <div id="method-selection"></div>
+            <div id="recent-evaluation"></div>
+            <div id="evaluation-count"></div>
+            <div id="test-output"></div>
+            <div id="evaluation-count-hourly"></div>
+                   
+            
         </div>
 
 
@@ -64,8 +73,7 @@
         <script type="text/javascript" src="js/jquery.fancybox.pack.js"></script>
 
 
-        <script type="text/javascript">
-  
+        <script type="text/javascript">                        
             function doLoadAsyncContent(urlToLoad, targetElement) {
                 $.ajax({
                     async: true,
@@ -80,6 +88,72 @@
             }
             
             $(document).ready(function () {
+                //Cache previous values
+                var numCastFeedback = 0;
+                var average = 0;
+                var tenMostRecent;
+                
+                setInterval(function() {
+                    $.ajax({ url: 'http://10.10.1.99:8080/Workshop/service/feedback/average', 
+                        async: true,
+                        
+                        method: 'get',
+                        dataType: 'html',
+                        success: function(data) {
+                            if(data !== average) {
+                                $('#test-output').html('<p>The average score is: '+'<span style="font-weight:700">'+data+'</span></p>');
+                                average = data;
+                                
+                            }
+                        }
+                        
+                    });
+                    $.ajax({ url: 'http://10.10.1.99:8080/Workshop/service/feedback/count', 
+                        async: true,
+                        
+                        method: 'get',
+                        dataType: 'html',
+                        success: function(data) {
+                            if(data !== numCastFeedback) {
+                                $('#evaluation-count').html('<p>Number of cast feeback: '+'<span style="font-weight:700">'+data+'</span></p>');
+                                numCastFeedback = data;
+                                
+                            } 
+                        }
+                        
+                    });
+                    $.ajax({ 
+                        url: 'http://10.10.1.99:8080/Workshop/service/feedback/since/'+new Date().getTime(), 
+                        async: true,
+                        data: {limit: 10},
+                        method: 'get',
+                        dataType: 'json',
+                        success: function(data) {
+                            var stringified = JSON.stringify(data);
+                            if(stringified !== tenMostRecent) {                                
+                                $('#evaluation-count-hourly').html('<p>10 most recent feebacks within the hour:<span style="font-weight:700"> '+data.length+ '</span></p>'+stringified);
+                                tenMostRecent = stringified;
+                            }
+                        }
+                        
+                    });
+                    
+                    
+                }, 1000);
+                
+                $("#do-feedback").on('click', function (event) {
+                    $.ajax({
+                        async: true,
+                        type: 'post',
+                        url: 'http://10.10.1.99:8080/Workshop/service/feedback/create/'+$('#feedback-value').val()
+                    });
+                    
+                    
+                    $('#recent-evaluation').html('<p>You recent evaluation: <span style="font-weight:700"> '+$('#feedback-value').val() +'</span></p>');
+                    $('#feedback-value').val(null);
+                });
+                
+                
                 $(['#inputNumParticpants','#inputWorkshopType','#inputWorkshopFormat']).each(function(index, value){
 
                     $(value).on('keyup change',function() {
