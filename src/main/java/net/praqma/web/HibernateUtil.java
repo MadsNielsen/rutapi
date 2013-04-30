@@ -43,6 +43,9 @@ public class HibernateUtil {
         return HibernateUtil.getSessionFactory().getCurrentSession();
     }
     
+    /*
+     * Get a single object
+     */
     public static <T extends Object> T getSingle(String query, HashMap<String, Object> parameters )  {
         T object = null;
         Transaction tx = null;
