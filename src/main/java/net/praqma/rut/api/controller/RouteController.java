@@ -2,12 +2,12 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package net.praqma.web.model;
+package net.praqma.rut.api.controller;
 
 /**
  *
- * @author Praqma
+ * @author mads
  */
-public class MeetingFormat {
+public class RouteController {
     
 }
